@@ -1,0 +1,25 @@
+models:
+  model for scheduled events that are coming up
+bot:
+  make keyword check wrapper
+  hookup bot
+  bot sends to channels
+  bot listens to channels for schedules + changes
+    ex: add frank tuesday 17:00:00 19:00:00
+    ex: update frank tuesday 17:00:00 19:00:00
+  announces upcoming event when scheduled
+  alerts t-minus n hours ahead of party
+  tell bot to run algo:
+    algorithm start
+    [bot lists top n]
+    algorithm choose 2
+    [bot schedules party]
+algorithm:
+  tweaks to desired results
+  tweaks to weighting parameters
+  generate top n results
+tests:
+  tests for discordbot [send/receive]? maybe just presence
+  test algo data set
+    expect top 5 or whatever
+    test saving + sending party to discord

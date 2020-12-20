@@ -25,7 +25,7 @@ class Person(models.Model):
 
 class Availability(models.Model):
   def __str__(self):
-    return str(self.person) + " on " + week_days[self.day][1] + " : " + str(self.start) + "-" + str(self.end)
+    return str(self.person) + ' on ' + week_days[self.day][1] + ' : ' + str(self.start) + '-' + str(self.end)
   def as_dict(self):
     return {
     'name': str(self.person),
@@ -36,6 +36,14 @@ class Availability(models.Model):
     'end_str': str(self.end),
     }
   person = models.ForeignKey(Person, on_delete=models.CASCADE)
+  day = models.IntegerField(choices=week_days)
+  start = models.TimeField()
+  end = models.TimeField()
+
+class Party(models.Model):
+  def __str__(self):
+    return ', '.join([str(person) for person in self.persons.all()]) + ' on ' + week_days[self.day][1] + ' : ' + str(self.start) + '-' + str(self.end)
+  persons = models.ManyToManyField(Person)
   day = models.IntegerField(choices=week_days)
   start = models.TimeField()
   end = models.TimeField()

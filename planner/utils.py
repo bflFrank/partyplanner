@@ -12,6 +12,16 @@ BEST_TIME_WEIGHT = 50
 PREFERRED_DAYS = [2,3,4]
 PREFERRED_DAYS_WEIGHT = 50
 
+week_days = (
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+)
+
 class Possibility:
   def __init__(self, start, end, day):
     self.start = start
@@ -31,7 +41,7 @@ class Possibility:
       self.score += PREFERRED_DAYS_WEIGHT
     return self.score
   def __str__(self):
-    return self.start.strftime('%H:%M:%S') + '-' + self.end.strftime('%H:%M:%S') + ' on ' + self.day + ' with ' + ', '.join(self.names) + '\n Total score of ' + str(round(self.score))
+    return self.start.strftime('%H:%M:%S') + '-' + self.end.strftime('%H:%M:%S') + ' on ' + week_days[int(self.day)] + ' with ' + ', '.join(self.names) + '\nTotal score of ' + str(round(self.score))
 
 
 def fuzzy_determinizer(times_list):
