@@ -16,6 +16,17 @@ GUILD = os.getenv('DISCORD_GUILD')
 
 bot = commands.Bot(command_prefix='!')
 
+@bot.command('add', help='Add a person to the DB.')
+async def help(ctx, arg):
+  arg = arg.lower()
+  sql = 'select * from people where name = ?'
+  if db.get(sql, arg) != None:
+    await ctx.send('Now hey there partner, {} already exists.'.format(arg))
+  else:
+    sql = 'insert into people (name) values (?)'
+    db.run(sql, arg)
+    await ctx.send('User {} has been added to the DB'.format(arg))
+
 @bot.command(name='pp', help='Test code checkination')
 async def test_message(ctx):
   response = 'where are all the white women at'
