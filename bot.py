@@ -106,7 +106,7 @@ async def add_time(ctx, name=None, day=None, start=None, end=None):
 
   #make sure users spell days correctly
   if day.lower() not in MEGA_DAYS_LIST:
-    return await ctx.send('Day incorrect, use one of the following: ' + ', '.join(MEGA_DAYS_LIST.keys()))
+    return await ctx.send('Day incorrect, use one of the following: ' + ', '.join([x for x in MEGA_DAYS_LIST.keys() if type(x) == str]))
   day_string, day = day, MEGA_DAYS_LIST[day.lower()]
 
   #make sure users spell names correctly
