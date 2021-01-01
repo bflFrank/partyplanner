@@ -15,21 +15,23 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = os.getenv('DISCORD_GUILD')
 
 MEGA_DAYS_LIST = {
-    0: 'Sunday     ',
-    1: 'Monday     ',
-    2: 'Tuesday    ',
-    3: 'Wednesday  ',
-    4: 'Thursday   ',
-    5: 'Friday     ',
-    6: 'Saturday   ',
-    'sunday': 0,
-    'monday': 1,
-    'tuesday': 2,
-    'wednesday': 3,
-    'thursday': 4,
-    'friday': 5,
-    'saturday': 6,
-  }
+  #Space padded for pretty displays
+  0: 'Sunday     ',
+  1: 'Monday     ',
+  2: 'Tuesday    ',
+  3: 'Wednesday  ',
+  4: 'Thursday   ',
+  5: 'Friday     ',
+  6: 'Saturday   ',
+  #Used for user input translation
+  'sunday': 0,
+  'monday': 1,
+  'tuesday': 2,
+  'wednesday': 3,
+  'thursday': 4,
+  'friday': 5,
+  'saturday': 6,
+}
 
 bot = commands.Bot(command_prefix='!')
 
@@ -66,14 +68,14 @@ async def list_times(ctx, name):
 
   if row == None:
     return await ctx.send('User {} not found'.format(name))
-  
+
   sql_two = 'select * from times where id_person = ?'
-  sql_checker = db.all(sql_two,row['id'])
+  sql_checker = db.all(sql_two, row['id'])
 
   if sql_checker == None:
     return await ctx.send('No times found for {}'.format(name))
-  
-  await ctx.send ('```All times for {}:\n'.format(name) + '\n'.join(['{day} \t\t{start} - {end}'.format(day=MEGA_DAYS_LIST[row['day']], start=row['start'], end=row['end']) for row in sql_checker])+'```')
+
+  await ctx.send ('```All times for {}:\n'.format(name) + '\n'.join(['{day} \t\t{start} - {end}'.format(day=MEGA_DAYS_LIST[row['day']], start=row['start'], end=row['end']) for row in sql_checker]) + '```')
 
 @bot.command('delete_time', help='Use this to remove a time scheduled on a day for a specific user', brief='Remove time for a specific person.')
 async def delete_time(ctx, name, day):
@@ -84,7 +86,7 @@ async def delete_time(ctx, name, day):
   id_person = row['id']
 
   if day.lower() not in MEGA_DAYS_LIST:
-    return await ctx.send('Day incorrect, use one of the following: ' + ', '.join(MEGA_DAYS_LIST.keys()))
+    return await ctx.send('Day incorrect, use one of the following: ' + ', '.join([x for x in MEGA_DAYS_LIST.keys() if type(x) == str]))
   day_string, day = day, MEGA_DAYS_LIST[day.lower()]
 
   sql_two = 'select * from times where id_person = ? and day = ?'
@@ -92,7 +94,7 @@ async def delete_time(ctx, name, day):
 
   if row_two == None:
     return await ctx.send('{name} does not have time set on {day}.'.format(name=name, day=day_string))
-  
+
   sql_three = 'delete from times where id_person = ? and day = ?'
   db.run(sql_three, [id_person, day])
   return await ctx.send('Time for {name} on {day} has been removed'.format(name=name, day=day_string))
