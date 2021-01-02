@@ -29,6 +29,6 @@ def algorithm_test():
   from people
   left join times on people.id = times.id_person
   '''
-  result = fuzzy_determinizer(db.all(sql))
-  print(result)
+  results = fuzzy_determinizer(db.all(sql), 5)
+  print('\n'.join([str(r) for r in results]))
 algorithm_test()

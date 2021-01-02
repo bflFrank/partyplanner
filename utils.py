@@ -33,6 +33,7 @@ class Possibility:
     if name not in self.names:
       self.names.append(name)
   def calculate_score(self, party_size):
+    self.score = 0
     self.score += (len(self.names) / party_size) * PARTICIPATION_WEIGHT
     if self.start_time >= BEST_TIME_RANGE[0] and self.start_time <= BEST_TIME_RANGE[1]:
       self.score += BEST_TIME_WEIGHT
@@ -40,7 +41,7 @@ class Possibility:
       self.score += PREFERRED_DAYS_WEIGHT
     return self.score
   def __str__(self):
-    return self.start_time.strftime('%H:%M:%S') + '-' + self.end_time.strftime('%H:%M:%S') + ' on ' + week_days[int(self.day)] + ' with ' + ', '.join(self.names) + '\nTotal score of ' + str(round(self.score))
+    return self.start_time.strftime('%H:%M:%S') + '-' + self.end_time.strftime('%H:%M:%S') + ' on ' + week_days[int(self.day)] + ' with ' + ', '.join(self.names) + '. Total score of ' + str(round(self.score))
 
 def timeularize(time_string):
   h = int(time_string[0:2])
@@ -49,7 +50,7 @@ def timeularize(time_string):
   now = datetime.now()
   return now.replace(hour=h, minute=m, second=s, microsecond=0)
 
-def fuzzy_determinizer(data):
+def fuzzy_determinizer(data, amount=5):
   possibilities = {}
   names = []
   times_list = []
@@ -60,7 +61,7 @@ def fuzzy_determinizer(data):
     row['start_time'] = timeularize(row['start'])
     row['end_time'] = timeularize(row['end'])
     times_list.append(row)
-    
+
   #build all possibilities
   for i1, time1 in enumerate(times_list):
     if time1['name'] not in names:
@@ -107,13 +108,12 @@ def fuzzy_determinizer(data):
         continue
       if possibilities[pos].start_time >= time['start_time'] and possibilities[pos].end_time <= time['end_time']:
         possibilities[pos].add_name(time['name'])
+    #and then generate the score
+    possibilities[pos].calculate_score(len(names))
 
-  max = 0
-  biggest_pos = None
-  #calculate possibility scores
-  for pos in possibilities:
-    current_score = possibilities[pos].calculate_score(len(names))
-    if current_score > max:
-      max = current_score
-      biggest_pos = pos
-  return possibilities[biggest_pos]
+  #putem in order
+  pos_list = list(possibilities.values())
+  pos_list.sort(key=lambda x: x.score, reverse=True)
+
+  #give back amount requested
+  return pos_list[:amount]

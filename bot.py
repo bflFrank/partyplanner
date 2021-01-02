@@ -2,6 +2,7 @@
 import os
 import threading
 from db import DB
+from utils import fuzzy_determinizer
 
 db = DB()
 db.generate_db()
@@ -32,6 +33,10 @@ MEGA_DAYS_LIST = {
   'friday': 5,
   'saturday': 6,
 }
+#dict used to store the generated possibilities
+#filled with !pp
+#used/selected from !ppp
+possibilities = {}
 
 bot = commands.Bot(command_prefix='!')
 
@@ -59,7 +64,10 @@ async def delete_person(ctx, arg):
 @bot.command('list_people', help='!list_people', brief='Show all names in DB.')
 async def list_users(ctx):
   sql = 'select * from people'
-  await ctx.send('All users: ' + ', '.join([row['name'] for row in db.all(sql)]))
+  rows = db.all(sql)
+  if len(rows) == 0:
+    return await ctx.send('No users found!')
+  await ctx.send('All users: ' + ', '.join([row['name'] for row in rows]))
 
 @bot.command('list_times', help='!list_times', brief='Show all times in DB.')
 async def list_times(ctx, name):
@@ -75,7 +83,7 @@ async def list_times(ctx, name):
   if sql_checker == None:
     return await ctx.send('No times found for {}'.format(name))
 
-  await ctx.send ('```All times for {}:\n'.format(name) + '\n'.join(['{day} \t\t{start} - {end}'.format(day=MEGA_DAYS_LIST[row['day']], start=row['start'], end=row['end']) for row in sql_checker]) + '```')
+  await ctx.send('```All times for {}:\n'.format(name) + '\n'.join(['{day} \t\t{start} - {end}'.format(day=MEGA_DAYS_LIST[row['day']], start=row['start'], end=row['end']) for row in sql_checker]) + '```')
 
 @bot.command('delete_time', help='Use this to remove a time scheduled on a day for a specific user', brief='Remove time for a specific person.')
 async def delete_time(ctx, name, day):
@@ -128,4 +136,33 @@ async def add_time(ctx, name=None, day=None, start=None, end=None):
     inputs = [start, end, row['id']]
   db.run(sql,inputs)
   await ctx.send('Time for {name} on {day} set to {start} - {end}'.format(name=name, day=day_string, start=start, end=end))
+
+@bot.command('!pp', help='Let the algorithm do its job.  Generates possibile party times that you can then select with !ppp.', brief='Generate party times')
+async def pp(ctx, amount=5):
+  #in any world where the algorithm takes too long,
+  #let the user know we're giving it all she's got
+  async with ctx.typing():
+    sql = '''
+    select *
+    from people
+    left join times on people.id = times.id_person
+    '''
+    rows = db.all(sql)
+    if rows == None:
+      return await ctx.send('Error, data incomplete.  Fill in the db with more !add_person and !add_time.')
+
+    possibilities = {}
+    results = fuzzy_determinizer(rows, amount)
+    for i, posssibility in enumerate(rows):
+      possibilities[i] = possibility
+    return await ctx.send('Possibilities generated! Printing below...\n' + '\n'.join([str(x) + ': ' + possibilities[x] for x in possibilities]))
+
+@bot.command('!ppp', help='Pick the time slot that works, ran after !pp', brief='Pick party time')
+async def ppp(ctx, option=None):
+  if not possibilities:
+    return await ctx.send('No party opportunities generated!  First run !pp to let the algorithm do its job.')
+
+  if option == None:
+    return await ctx.send('No party opportunity selected.  Invoke !pp to see options and then run !ppp [option].')
+  #TODO: first make !pp then do this
 bot.run(TOKEN)
